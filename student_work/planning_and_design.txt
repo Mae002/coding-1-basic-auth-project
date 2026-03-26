@@ -5,31 +5,43 @@ APP PLANNING & DESIGN
 1. PROJECT NAME & THEME
 -------------------------
 - What is your app called, and what type of app is it?  
+    - AniVision
+    - Visionboards
 - What style or vibe do you want users to experience?
+    - Cute, 
 - What about your app will require a log-in structure?
-
+    - content personalization
 2. CORE FUNCTIONALITY
 -------------------------
-- What are the essential features your app must have?  
+- What are the essential features your app must have? 
+    - Log in page, images, type of user, user input
 - What optional features could make your app more interactive or personalized?
-
+    - Choose multiple animals
 3. SECRET OR PERSONALIZED CONTENT
-
+    - The information on animals with picture
 -------------------------
 - What content will users see after logging in?  
+    - Choose favorite animal
+    - Choose type of user
 - Will this content change depending on who is using the app (admin, user, special user?)
-
+    - Yes
 4. USER EXPERIENCE (UX) DESIGN
 -------------------------
 - How should your app look and feel?
+    - Informative, interesting, entertaining
+    - Clean, organized, artistic
 - How will users navigate between pages?
-
+    - Arrows(Next buttons)
 5. SECURITY FEATURES
 -------------------------
 - What password and authentication rules will you enforce?  
+    - 8 characters, allow special character, allow numbers, do not allow letters
 - How will you protect secret pages from unauthorized access?
+    - 3 false passwords in succession == answer riddle that only the real user knows the answer to
 
 6. OPTIONAL CREATIVE ENHANCEMENTS
 -------------------------
 - What customization or fun features could users enjoy?
+    - chat, add information(like wikipedia), create own board and share it
 - Are there interactive elements, like games, quizzes, or badges, you could include?
+    - Mini quiz depending on the animals and gain badges, more badges == more capability to create boards and share it (usually 1 per day limit for starting users)
