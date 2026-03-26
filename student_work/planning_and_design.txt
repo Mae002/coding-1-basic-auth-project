@@ -35,7 +35,7 @@ APP PLANNING & DESIGN
 5. SECURITY FEATURES
 -------------------------
 - What password and authentication rules will you enforce?  
-    - 8 characters, allow special character, allow numbers, do not allow letters
+    - 8 characters, allow special character, allow numbers, allow letters
 - How will you protect secret pages from unauthorized access?
     - 3 false passwords in succession == answer riddle that only the real user knows the answer to
 
