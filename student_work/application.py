@@ -16,6 +16,7 @@ def init_db():
         CREATE TABLE IF NOT EXISTS users (
             username TEXT PRIMARY KEY,
             password TEXT
+            favorite_animal ##left of here again ***2
         )
     """)
     conn.commit()
