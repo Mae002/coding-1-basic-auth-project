@@ -1,3 +1,7 @@
+#figure out flask html image syntax
+
+
+
 from flask import Flask, request, redirect, url_for, render_template_string, session
 import sqlite3
 
@@ -15,8 +19,8 @@ def init_db():
     conn.execute("""
         CREATE TABLE IF NOT EXISTS users (
             username TEXT PRIMARY KEY,
-            password TEXT
-            favorite_animal ##left of here again ***2
+            password TEXT,
+            favorite_animal TEXT
         )
     """)
     conn.commit()
@@ -69,10 +73,7 @@ login_page = f"""{base_style}
   <input name="password" type="password" placeholder="Password"><br>
   <label for="favorite_animal">Choose your favorite animal:</label>
   <select name="favorite_animal" id="favorite_animal">
-    <option value="cat">Cat</option>
-    <option value="dog">Dog</option>
     <option value="hyena">Hyena</option>
-    <option value="horse">Horse</option>
   </select>
   <button type="submit">Login</button>
 </form>
@@ -104,6 +105,8 @@ favorite_animal_page = f"""{base_style}
 <div class="card">
 <h2>Welcome to AniVision!</h2>
 <h3>Welcome, {{{{ username }}}}!</h3>
+<h4>Here is your favorite animal's vision board!</h4>
+
 <p>Here is a vision board of your favorite animal1</p>
 <a href="/logout"><button>Logout</button></a>
 </div>
@@ -120,7 +123,7 @@ def login():
         conn = get_db()
         user = conn.execute(
             "SELECT * FROM users WHERE username=? AND password=?",
-            (username, password)
+            (username, password, favorite_animal)
         ).fetchone()
         conn.close()
 
@@ -130,8 +133,6 @@ def login():
         else:
             error = "Incorrect username or password"
 
-        if favorite_animal == "hyena":
-            <img src= "hyena.jpg" alt="Hyena">   ###left off here
     return render_template_string(login_page, error=error)
 
 @app.route("/register", methods=["GET", "POST"])
@@ -144,17 +145,24 @@ def register():
         if not username or not password:
             error = "Fields cannot be empty"
         else:
+            conn = get_db()
             try:
-                conn = get_db()
+                hashed_pw = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
                 conn.execute(
-                    "INSERT INTO users (username, password) VALUES (?, ?)",
-                    (username, password)
+                    "INSERT INTO users (username, password, favorite_animal) VALUES (?, ?)",
+                    (username, hashed_pw, favorite_animal)
                 )
                 conn.commit()
-                conn.close()
+        
                 return redirect(url_for("login"))
             except sqlite3.IntegrityError:
+                conn.rollback
                 error = "Username already exists"
+            except Exception:
+                conn.rollback()
+                error = "Unexpected error during registration"
+            finally:
+                conn.close()
 
     return render_template_string(register_page, error=error)
 
