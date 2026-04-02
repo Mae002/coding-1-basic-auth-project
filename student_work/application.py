@@ -89,10 +89,7 @@ register_page = f"""{base_style}
   <input name="username" placeholder="Username"><br>
   <input name="password" type="password" placeholder="Password"><br>
    <select name="favorite_animal" id="favorite_animal">
-    <option value="cat">Cat</option>
-    <option value="dog">Dog</option>
     <option value="hyena">Hyena</option>
-    <option value="horse">Horse</option>
   </select>
   <button type="submit">Sign Up</button>
 </form>
