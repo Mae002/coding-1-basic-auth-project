@@ -1,5 +1,3 @@
-#figure out flask html image syntax
-
 from flask import Flask, request, redirect, url_for, render_template_string, session
 import sqlite3
 import bcrypt
@@ -27,13 +25,27 @@ def init_db():
     conn.execute("""
         CREATE TABLE IF NOT EXISTS users (
             username TEXT PRIMARY KEY,
-            password TEXT,
-            favorite_animal TEXT
+            password TEXT
         )
     """)
     conn.commit()
     conn.close()
+def get_animalsdb():
+    conn = sqlite3.connect("animals.db")
+def init_animalsdb():
+    conn = get_animalsdb()
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS animals (
+            animal name TEXT PRIMARY KEY, 
+            habitat TEXT
+            food TEXT
+        )
+    """)
+    conn.commit()
+    conn.close
 
+
+init_animalsdb()
 init_db()
 
 # ---------- STYLE ----------
@@ -79,10 +91,6 @@ login_page = f"""{base_style}
 <form method="POST">
   <input name="username" placeholder="Username"><br>
   <input name="password" type="password" placeholder="Password"><br>
-  <label for="favorite_animal">Choose your favorite animal:</label>
-  <select name="favorite_animal" id="favorite_animal">
-    <option value="hyena">Hyena</option>
-  </select>
   <button type="submit">Login</button>
 </form>
 <a href="/register">Create an account</a>
@@ -96,9 +104,6 @@ register_page = f"""{base_style}
 <form method="POST">
   <input name="username" placeholder="Username"><br>
   <input name="password" type="password" placeholder="Password"><br>
-   <select name="favorite_animal" id="favorite_animal">
-    <option value="hyena">Hyena</option>
-  </select>
   <button type="submit">Sign Up</button>
 </form>
 <a href="/">Back to login</a>
@@ -108,11 +113,17 @@ register_page = f"""{base_style}
 
 favorite_animal_page = f"""{base_style}
 <div class="card">
-<h2>Welcome to AniVision!</h2>
+<h2>AniVision</h2>
 <h3>Welcome, {{{{ username }}}}!</h3>
-<h4>Here is your favorite animal's vision board!</h4>
-<p>Here is a vision board of your favorite animal1</p>
+<p>Contribute information today!</p>
 <a href="/logout"><button>Logout</button></a>
+</div>
+"""
+
+additional_information_page = f"""{base_style}
+<div class="card">
+<h2>Add More Information</h2>
+<a href="logout"><button>Logout</button></a>
 </div>
 """
 
@@ -124,22 +135,17 @@ def login():
         username = request.form["username"].strip()
         password = request.form["password"].strip()
 
-        # if favorite_animal == request.form("favorite_animal","hyena"):
-        #     return "hyena"
-        # else: 
-        #     return "none"
-
         conn = get_db()
         user = conn.execute(
-            "SELECT * FROM users WHERE username=? AND password=?",
-            (username, password)
+            "SELECT * FROM users WHERE username=?",
+            (username,)
         ).fetchone()
         conn.close()
 
+        # user['password'] is bytes in SQLite; check with bcrypt
         if user and bcrypt.checkpw(password.encode("utf-8"), user["password"]):
             session["user"] = username
-            # session["user"] = favorite_animal
-            return redirect(url_for("fav_anim"))
+            return redirect(url_for("favorite_animal"))
         else:
             error = "Incorrect username or password"
 
@@ -159,16 +165,18 @@ def register():
         else:
             conn = get_db()
             try:
+                # Hash password with bcrypt
                 hashed_pw = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
+
                 conn.execute(
-                    "INSERT INTO users (username, password, favorite_animal) VALUES (?, ?)",
-                    (username, hashed_pw, favorite_animal)
+                    "INSERT INTO users (username, password) VALUES (?, ?)",
+                    (username, hashed_pw)
                 )
                 conn.commit()
-        
+
                 return redirect(url_for("login"))
             except sqlite3.IntegrityError:
-                conn.rollback
+                conn.rollback()
                 error = "Username already exists"
             except Exception:
                 conn.rollback()
@@ -179,10 +187,17 @@ def register():
     return render_template_string(register_page, error=error)
 
 @app.route("/favorite_animal")
-def fav_anim():
+def favorite_animal():
     if "user" not in session:
         return redirect(url_for("login"))
     return render_template_string(favorite_animal_page, username=session["user"])
+
+@app.route("/register", methods=["GET", "POST", "PUT", "DELETE"])
+@app.route("/additional_information")
+def additional_information():
+    if "user" not in session:
+        retur redirect(url_for("login"))
+    return render_template_string(additional_information_page, username=session["user"])
 
 @app.route("/logout")
 def logout():

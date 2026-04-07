@@ -45,3 +45,12 @@ APP PLANNING & DESIGN
     - chat, add information(like wikipedia), create own board and share it
 - Are there interactive elements, like games, quizzes, or badges, you could include?
     - Mini quiz depending on the animals and gain badges, more badges == more capability to create boards and share it (usually 1 per day limit for starting users)
+
+7. MODIFIED PROJECT REQUIREMENTS:
+- GET (a webpage)
+- POST (what can be inputted)
+- PUT (what can be edited)
+- DELETE (what can be deleted)
+
+    - add more information about the animal? (like a wikipedia)
+    
