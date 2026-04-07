@@ -103,7 +103,6 @@ favorite_animal_page = f"""{base_style}
 <h2>Welcome to AniVision!</h2>
 <h3>Welcome, {{{{ username }}}}!</h3>
 <h4>Here is your favorite animal's vision board!</h4>
-
 <p>Here is a vision board of your favorite animal1</p>
 <a href="/logout"><button>Logout</button></a>
 </div>
@@ -116,6 +115,7 @@ def login():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
+        #favorite_animal = request.form.get('favorite_animal').................
 
         conn = get_db()
         user = conn.execute(
@@ -126,6 +126,7 @@ def login():
 
         if user:
             session["user"] = username
+            #session["favorite_animal"] = fav_animal ..................
             return redirect(url_for("fav_anim"))
         else:
             error = "Incorrect username or password"
