@@ -36,54 +36,6 @@ def get_animalsdb():
     conn.row_factory = sqlite3.Row
     return conn
 
-def init_animalsdb():
-    conn = get_animalsdb()
-
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS animals (
-            animal_name TEXT PRIMARY KEY, 
-            habitat TEXT,
-            food TEXT,
-            image TEXT,
-        )
-    """)
-    
-
-    conn.execute("""
-        INSERT INTO animals (animal_name, habitat, food, image)
-        VALUES ("Hyena", "Savanna", "Meat",'image of hyena') #add file for images and rename
-    """)
-    conn.commit()
-    conn.close()
-
-def is_valid_password(password):
-    if (re.search(r"[A-Z]", password) and   # uppercase
-        re.search(r"[a-z]", password) and   # lowercase
-        re.search(r"[0-9]", password) and   # number
-        re.search(r"[^A-Za-z0-9]", password)):  # special char
-        return True
-    return False
-
-def get_db():
-    conn = sqlite3.connect("users.db")
-    conn.row_factory = sqlite3.Row
-    return conn
-
-def init_db():
-    conn = get_db()
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            username TEXT PRIMARY KEY,
-            password TEXT
-        )
-    """)
-    conn.commit()
-    conn.close()
-
-def get_animalsdb():
-    conn = sqlite3.connect("animals.db")
-    conn.row_factory = sqlite3.Row
-    return conn
 
 def init_animalsdb():
     conn = get_animalsdb()
