@@ -30,23 +30,84 @@ def init_db():
     """)
     conn.commit()
     conn.close()
+
 def get_animalsdb():
     conn = sqlite3.connect("animals.db")
+    conn.row_factory = sqlite3.Row
+    return conn
+
 def init_animalsdb():
     conn = get_animalsdb()
+
     conn.execute("""
         CREATE TABLE IF NOT EXISTS animals (
-            animal name TEXT PRIMARY KEY, 
-            habitat TEXT
-            food TEXT
+            animal_name TEXT PRIMARY KEY, 
+            habitat TEXT,
+            food TEXT,
+            image TEXT,
+        )
+    """)
+    
+
+    conn.execute("""
+        INSERT INTO animals (animal_name, habitat, food, image)
+        VALUES ("Hyena", "Savanna", "Meat",'image of hyena') #add file for images and rename
+    """)
+    conn.commit()
+    conn.close()
+
+def is_valid_password(password):
+    if (re.search(r"[A-Z]", password) and   # uppercase
+        re.search(r"[a-z]", password) and   # lowercase
+        re.search(r"[0-9]", password) and   # number
+        re.search(r"[^A-Za-z0-9]", password)):  # special char
+        return True
+    return False
+
+def get_db():
+    conn = sqlite3.connect("users.db")
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def init_db():
+    conn = get_db()
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            username TEXT PRIMARY KEY,
+            password TEXT
         )
     """)
     conn.commit()
-    conn.close
+    conn.close()
+
+def get_animalsdb():
+    conn = sqlite3.connect("animals.db")
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def init_animalsdb():
+    conn = get_animalsdb()
+    conn.execute("DROP TABLE IF EXISTS animals")
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS animals (
+            animal_name TEXT PRIMARY KEY, 
+            habitat TEXT,
+            food TEXT,
+            image TEXT
+        )
+    """)
+
+    conn.execute("""
+        INSERT INTO animals (animal_name, habitat, food, image)
+        VALUES ("Hyena", "Savanna", "Meat", "image of hyena") 
+    """) #add file for images and rename
+    conn.commit()
+    conn.close()
 
 
-init_animalsdb()
 init_db()
+init_animalsdb()
+
 
 # ---------- STYLE ----------
 base_style = """
@@ -111,18 +172,35 @@ register_page = f"""{base_style}
 </div>
 """
 
-favorite_animal_page = f"""{base_style}
+main_animal_page = f"""{base_style}
 <div class="card">
 <h2>AniVision</h2>
 <h3>Welcome, {{{{ username }}}}!</h3>
-<p>Contribute information today!</p>
+<p>Contribute to our animal loving community today!</p>
+    {{% for animal in animals %}}
+    <div class="card">
+        <img src="{{{{image}}}}" alt="{{{{animals.animal_name}}}}">
+        <h4>{{{{animal_name}}}}</h4>
+        <p><strong>Habitat</strong> {{{{animal.habitat}}}}</p>
+        <p><strong>Food</strong> {{{{animal.food}}}}</p>
+    {{% endfor %}} 
+<a href="/additional_information"><button>Add Animal Info</button></a>
 <a href="/logout"><button>Logout</button></a>
 </div>
-"""
+"""   
 
 additional_information_page = f"""{base_style}
 <div class="card">
 <h2>Add More Information</h2>
+<form method="POST">
+    <input type="text" name="animal_name" placeholder="Animal Name" required><br>
+    <input type="text" name="habitat" placeholder="Habitat" required><br>
+    <input type="food" name="food" placeholder="Food" required><br>
+    <input type="image" name="image" placeholder="Image" required><br>
+    <button type="Submit"><Add Animal</button>
+</form>
+<a href="/main_animal">Back to Animals</a>
+<p class="error">{{{{ error }}}}</p>
 <a href="logout"><button>Logout</button></a>
 </div>
 """
@@ -145,11 +223,14 @@ def login():
         # user['password'] is bytes in SQLite; check with bcrypt
         if user and bcrypt.checkpw(password.encode("utf-8"), user["password"]):
             session["user"] = username
-            return redirect(url_for("favorite_animal"))
+            return redirect(url_for("main_animal"))
         else:
             error = "Incorrect username or password"
 
     return render_template_string(login_page, error=error)
+
+
+
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -186,17 +267,43 @@ def register():
 
     return render_template_string(register_page, error=error)
 
-@app.route("/favorite_animal")
-def favorite_animal():
-    if "user" not in session:
-        return redirect(url_for("login"))
-    return render_template_string(favorite_animal_page, username=session["user"])
+@app.route("/main_animal")
+def main_animal(): #main page with initialized animal
+    error = ""
+    conn = get_animalsdb()
+    if request.method == "POST":
+        animal_name = request.form.get("animal_name")
+        habitat = request.form.get("habitat")
+        food = requiest.form.get("food")
+        image_url = request.form.get("image")
 
-@app.route("/register", methods=["GET", "POST", "PUT", "DELETE"])
+
+        conn = get_animalsdb()
+        animal = conn.execute(
+            "SELECT * FROM animals WHERE main_animal=?",
+            (main_animal,)
+        ).fetchone()
+        conn.close()
+
+    else: 
+        animal_name = request.form.get("animal_name")
+        habitat = request.form.get("habitat")
+        food = request.form.get("food")
+        image_url = request.form.get("image")
+        conn.execute(
+            "INSERT INTO animals (animal_name, habitat, food, image) VALUES (?, ?, ?, ?)", 
+            (animal_name, habitat, food, image_url)
+        )
+        conn.commit()
+        conn.close()
+
+    return render_template_string(main_animal_page, username=session["user"])
+
+@app.route("/additional_information", methods=["GET", "POST", "PUT", "DELETE"])
 @app.route("/additional_information")
 def additional_information():
     if "user" not in session:
-        retur redirect(url_for("login"))
+        return redirect(url_for("login"))
     return render_template_string(additional_information_page, username=session["user"])
 
 @app.route("/logout")
