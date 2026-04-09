@@ -6,7 +6,7 @@ import re
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
 
-# ---------- DATABASE SETUP ----------
+# ---------- PASSWORD VALIDATION ----------
 def is_valid_password(password):
     if (re.search(r"[A-Z]", password) and   # uppercase
         re.search(r"[a-z]", password) and   # lowercase
@@ -14,7 +14,7 @@ def is_valid_password(password):
         re.search(r"[^A-Za-z0-9]", password)):  # special char
         return True
     return False
-
+# ---------- DATABASE SETUP ----------
 def get_db():
     conn = sqlite3.connect("users.db")
     conn.row_factory = sqlite3.Row
@@ -274,7 +274,10 @@ def main_animal():
         return redirect(url_for("login"))
     
     conn = get_animalsdb()
+
     animals = conn.execute("SELECT * FROM animals").fetchall()
+    for animal in animals:
+        print(animal["animal_name"], animal["habitat"], animal["food"]) #works
     conn.close()
 
     
@@ -307,7 +310,6 @@ def main_animal():
     return render_template_string(main_animal_page, username=session["user"], animals=animals)
 
 @app.route("/additional_information", methods=["GET", "POST"])
-#@app.route("/additional_information")
 def additional_information():
     if "user" not in session:
         return redirect(url_for("login"))
