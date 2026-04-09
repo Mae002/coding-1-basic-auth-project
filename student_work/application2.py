@@ -69,8 +69,10 @@ body {
     background: #f4f6f8;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start; #center
     height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
 }
 .card {
     background: #accbff;
@@ -79,11 +81,44 @@ body {
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     width: 300px;
     text-align: center;
+    margin-bottom: 20px; 
+}
+
+}
+.main-card-wrapper {
+    width; 90%;
+    max-width: 1200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.animal-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    width: 100%;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+.animal-card {
+    flex: 0 0 auto;
+    wifth: 280px;
+    padding: 15px;
+    box-sizing: border-box;
+}
+.animal-card img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 5px;
+    margin-bottom: 10px;
 }
 input {
     width: 90%;
     padding: 8px;
     margin: 8px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
 }
 button {
     padding: 10px;
@@ -91,9 +126,16 @@ button {
     background: #4188ff;
     color: white;
     border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    marin: 5px;
+}
+button:hover {
+    background: #2a6edc;
 }
 .error {
     color: red;
+    margin-top: 10px;
 }
 </style>
 """
@@ -125,19 +167,24 @@ register_page = f"""{base_style}
 """
 
 main_animal_page = f"""{base_style}
-<div class="card">
-<h2>AniVision</h2>
-<h3>Welcome, {{{{ username }}}}!</h3>
-<p>Contribute to our animal loving community today!</p>
-    {{% for animal in animals %}}
-    <div class="card">
-        <img src="{{{{image}}}}" alt="{{{{animals.animal_name}}}}">
-        <h4>{{{{animal_name}}}}</h4>
-        <p><strong>Habitat</strong> {{{{animal.habitat}}}}</p>
-        <p><strong>Food</strong> {{{{animal.food}}}}</p>
-    {{% endfor %}} 
-<a href="/additional_information"><button>Add Animal Info</button></a>
-<a href="/logout"><button>Logout</button></a>
+<div class="main-card-wrapper card">
+    <h2>AniVision</h2>
+    <h3>Welcome, {{{{ username }}}}!</h3>
+    <p>Contribute to our animal loving community today!</p>
+    <div class="animal-container">
+        {{% for animal in animals %}}
+        <div class="animal-card card">
+            <img src="{{{{image_file}}}}" alt="{{{{animals.animal_name}}}}">
+            <h4>{{{{animal_name}}}}</h4>
+            <p><strong>Habitat</strong> {{{{animals.habitat}}}}</p>
+            <p><strong>Food</strong> {{{{animals.food}}}}</p>
+        </div>
+        {{% endfor %}} 
+    </div>
+    <div style="margin-top: 20px;">
+    <a href="/additional_information"><button>Add Animal Info</button></a>
+    <a href="/logout"><button>Logout</button></a>
+    </div>
 </div>
 """   
 
@@ -148,8 +195,8 @@ additional_information_page = f"""{base_style}
     <input type="text" name="animal_name" placeholder="Animal Name" required><br>
     <input type="text" name="habitat" placeholder="Habitat" required><br>
     <input type="food" name="food" placeholder="Food" required><br>
-    <input type="image" name="image" placeholder="Image" required><br>
-    <button type="Submit"><Add Animal</button>
+    <input type="file" name="image_file" accept="image/*" required><br>
+    <button type="submit">Add Animal</button>
 </form>
 <a href="/main_animal">Back to Animals</a>
 <p class="error">{{{{ error }}}}</p>
@@ -220,43 +267,81 @@ def register():
     return render_template_string(register_page, error=error)
 
 @app.route("/main_animal")
-def main_animal(): #main page with initialized animal
+def main_animal(): 
+    #main page with initialized animal
     error = ""
+    if "user" not in session:
+        return redirect(url_for("login"))
+    
     conn = get_animalsdb()
-    if request.method == "POST":
-        animal_name = request.form.get("animal_name")
-        habitat = request.form.get("habitat")
-        food = requiest.form.get("food")
-        image_url = request.form.get("image")
+    animals = conn.execute("SELECT * FROM animals").fetchall()
+    conn.close()
 
+    
+    # conn = get_animalsdb()
+    # if request.method == "POST":
+    #     animal_name = request.form.get("animal_name")
+    #     habitat = request.form.get("habitat")
+    #     food = requiest.form.get("food")
+    #     image_file = request.form.get("image_file")
 
-        conn = get_animalsdb()
-        animal = conn.execute(
-            "SELECT * FROM animals WHERE main_animal=?",
-            (main_animal,)
-        ).fetchone()
-        conn.close()
+    #     conn = get_animalsdb()
+    #     animal = conn.execute(
+    #         "SELECT * FROM animals WHERE animal_name=?",
+    #         (animal_name, habitat, food, image_file,
+    #     ).fetchall()
+    #     conn.close()
 
-    else: 
-        animal_name = request.form.get("animal_name")
-        habitat = request.form.get("habitat")
-        food = request.form.get("food")
-        image_url = request.form.get("image")
-        conn.execute(
-            "INSERT INTO animals (animal_name, habitat, food, image) VALUES (?, ?, ?, ?)", 
-            (animal_name, habitat, food, image_url)
-        )
-        conn.commit()
-        conn.close()
+    # else: 
+    #     animal_name = request.form.get("animal_name")
+    #     habitat = request.form.get("habitat")
+    #     food = request.form.get("food")
+    #     image_file = request.form.get("image_file")
+    #     conn.execute(
+    #         "INSERT INTO animals (animal_name, habitat, food, image) VALUES (?, ?, ?, ?)", 
+    #         (animal_name, habitat, food, image_file)
+    #     )
+    #     conn.commit()
+    #     conn.close()
 
-    return render_template_string(main_animal_page, username=session["user"])
+    return render_template_string(main_animal_page, username=session["user"], animals=animals)
 
-@app.route("/additional_information", methods=["GET", "POST", "PUT", "DELETE"])
-@app.route("/additional_information")
+@app.route("/additional_information", methods=["GET", "POST"])
+#@app.route("/additional_information")
 def additional_information():
     if "user" not in session:
         return redirect(url_for("login"))
-    return render_template_string(additional_information_page, username=session["user"])
+
+    error = ""
+    if request.method == "POST":
+        animal_name = request.form.get("animal_name")
+        habitat = request.form.get("habitat")
+        food = request.form.get("food")
+        image_file = request.form.get("image_file")
+
+        if not animal_name or not habitat or not food or not food or not image_file:
+            error = "All fields are required"
+        else: 
+            conn = get_animalsdb()
+            try: 
+                conn.execute(
+                    "INSERT INTO animals (animal_name, habitat, food, image) VALUES (?, ?, ?, ?)",
+                    (animal_name, habitat, food, image_file)
+                )
+                conn.commit()
+                return redirect(url_for("main_animal")) 
+                #redirects main page after adding
+            except sqlite3.IntegrityError:
+                conn.rollback()
+                error = "Animal with name already exists"
+            # except Exception as e:
+            #     conn.rollback()
+            #     error = f"An error occured: {e}"
+            finally:
+                conn.close()
+
+    return render_template_string(additional_information_page, username=session["user"], error=error)
+
 
 @app.route("/logout")
 def logout():
