@@ -43,19 +43,16 @@ def init_animalsdb():
     conn.execute("""
         CREATE TABLE IF NOT EXISTS animals (
             animal_name TEXT PRIMARY KEY, 
-            habitat TEXT,
-            food TEXT,
+            habitat TEXT DEFAULT 'SAVANNAH',
+            food TEXT DEFAULT 'MEAT',
             image TEXT
         )
     """)
 
-    conn.execute("""
-        INSERT INTO animals (animal_name, habitat, food, image)
-        VALUES ("Hyena", "Savanna", "Meat", "image of hyena") 
-    """) #add file for images and rename
+    conn.execute("INSERT INTO animals (animal_name) VALUES ('Hyena');") #add file for images and rename
     conn.commit()
     conn.close()
-
+# INSERT INTO animals (animal_name, habitat, food, image) 
 
 init_db()
 init_animalsdb()
@@ -137,6 +134,15 @@ button:hover {
     color: red;
     margin-top: 10px;
 }
+
+.card-title {
+    font-weight: bold;}
+}
+
+.label {
+    font-weight: bold; 
+    margin-right: 5px;
+}
 </style>
 """
 
@@ -174,10 +180,10 @@ main_animal_page = f"""{base_style}
     <div class="animal-container">
         {{% for animal in animals %}}
         <div class="animal-card card">
-            <img src="{{{{image_file}}}}" alt="{{{{animals.animal_name}}}}">
-            <h4>{{{{animal_name}}}}</h4>
-            <p><strong>Habitat</strong> {{{{animals.habitat}}}}</p>
-            <p><strong>Food</strong> {{{{animals.food}}}}</p>
+            <img src="{{image_file}}" alt="{{animals.animal_name}}">
+            <h4>class = "card-title">{{animal_name}}</strong></h4>
+            <p><span class="label">Habitat</span> {{animals.habitat}}</p>
+            <p><span class="label">Food</span> {{animals.food}}</p>
         </div>
         {{% endfor %}} 
     </div>
@@ -336,9 +342,6 @@ def additional_information():
             except sqlite3.IntegrityError:
                 conn.rollback()
                 error = "Animal with name already exists"
-            # except Exception as e:
-            #     conn.rollback()
-            #     error = f"An error occured: {e}"
             finally:
                 conn.close()
 
